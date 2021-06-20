@@ -3,23 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_list_view">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="carrot.uos.giftsignal.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/navigation_list_view"
+        android:name="carrot.uos.giftsignal.ui.list.ListFragment"
+        android:label="@string/title_list_view"
+        tools:layout="@layout/fragment_list_view" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="carrot.uos.giftsignal.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_dir_view"
+        android:name="carrot.uos.giftsignal.ui.directory.DirectoryFragment"
+        android:label="@string/title_dir_view"
+        tools:layout="@layout/fragment_dir_view" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="carrot.uos.giftsignal.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_setting"
+        android:name="carrot.uos.giftsignal.ui.setting.SettingFragment"
+        android:label="@string/title_setting"
+        tools:layout="@layout/fragment_setting" />
 </navigation>
