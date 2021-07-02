@@ -1,6 +1,8 @@
 package kr.carrot.Spring.service;
 
 import kr.carrot.Spring.dto.ChampionMasteryDTO;
+import kr.carrot.Spring.dto.MatchReferenceDTO;
+import kr.carrot.Spring.dto.MatchListDTO;
 import kr.carrot.Spring.dto.SummonerDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -146,6 +148,51 @@ public class RiotService {
         else {
             return null;
         }
+    }
+
+    /**
+     * 소환사 이름으로 최근 count개의 기록을 조회
+     * @param summonerName
+     * @param count
+     * @return
+     */
+    public List<MatchReferenceDTO> getMatchList(String summonerName, int count) {
+
+        // get account id
+        SummonerDTO summonerInfo = findSummonerInfoByName(summonerName);
+
+        // set header
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("X-Riot-Token", API_KEY);
+
+        // create http request entity
+        HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+
+        // set pathVariables
+        Map<String, String> pathVars = new HashMap<>();
+        pathVars.put("encryptedAccountId", summonerInfo.getAccountId());
+
+        // build uri
+        URI uri = UriComponentsBuilder.fromUriString(RIOT_BASE_URL)
+                .path("/lol/match/v4/matchlists/by-account/{encryptedAccountId}")
+                .queryParam("beginIndex", 0)
+                .queryParam("endIndex", count)
+                .buildAndExpand(pathVars)
+                .encode(StandardCharsets.UTF_8)
+                .toUri();
+
+        // get math list
+        ResponseEntity<MatchListDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, MatchListDTO.class);
+
+        // return match list
+        if(result.hasBody() && result.getBody().getMatches() != null) {
+            return result.getBody().getMatches();
+        }
+        else {
+            return null;
+        }
+
     }
 
 }

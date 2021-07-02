@@ -1,8 +1,8 @@
 package kr.carrot.Spring.service;
 
 import kr.carrot.Spring.dto.ChampionMasteryDTO;
+import kr.carrot.Spring.dto.MatchReferenceDTO;
 import kr.carrot.Spring.dto.SummonerDTO;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +28,7 @@ class RiotServiceTest {
 
         // find by name
         SummonerDTO summonerInfoByName = riotService.findSummonerInfoByName(environment.getProperty("riot.summoner-name"));
+//        SummonerDTO summonerInfoByName = riotService.findSummonerInfoByName("sheria");
 
         System.out.println("summonerInfoByName = " + summonerInfoByName);
         assertThat(summonerInfoByName).isNotNull();
@@ -48,7 +49,18 @@ class RiotServiceTest {
 
         List<ChampionMasteryDTO> masteryList = riotService.getChampionMasteryBySummonerId(environment.getProperty("riot.summoner-id"));
 
+        assertThat(masteryList).isNotNull();
         masteryList.forEach(System.out::println);
+    }
+
+    @Test
+    public void 최근게임이력조회() {
+
+        // 최근 5건의 경기 조회
+        List<MatchReferenceDTO> matchList = riotService.getMatchList(environment.getProperty("riot.summoner-name"), 5);
+
+        assertThat(matchList).isNotNull();
+        matchList.forEach(System.out::println);
     }
 
 }
