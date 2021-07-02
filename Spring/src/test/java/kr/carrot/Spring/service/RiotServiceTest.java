@@ -1,10 +1,9 @@
 package kr.carrot.Spring.service;
 
+import kr.carrot.Spring.dto.SummonerDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest
@@ -15,9 +14,9 @@ class RiotServiceTest {
 
     @Test
     public void test() {
-        riotService.printKey();
+        SummonerDTO result = riotService.getSummonerInfo("hojong1351");
 
-        riotService.callApi();
+        System.out.println(result);
     }
 
 }
