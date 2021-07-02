@@ -13,6 +13,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,13 +26,14 @@ import java.util.stream.Collectors;
 public class RiotService {
 
     private final RestTemplate restTemplate;
+
     @Value("${riot.api-key}")
-    private static String API_KEY;
+    private String API_KEY;
 
     @Value("${riot.summoner-id}")
-    private static String SUMMONER_ID_ATRON;
+    private String SUMMONER_ID_ATRON;
 
-    private static final String RIOT_BASE_URL = "https://kr.api.riotgames.com";
+    public static final String RIOT_BASE_URL = "https://kr.api.riotgames.com";
 
     /**
      * 소환사 ID로 소환사 정보 조회
@@ -90,7 +93,10 @@ public class RiotService {
                 .fromUriString(RIOT_BASE_URL)
                 .path("/lol/summoner/v4/summoners/by-name/{summonerName}")
                 .buildAndExpand(pathVariable)
+                .encode(StandardCharsets.UTF_8) // 한글이 그대로 들어가면 에러남
                 .toUri();
+
+        System.out.println(uri.toString());
 
         // get summoner info (rest call)
         ResponseEntity<SummonerDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, SummonerDTO.class);
@@ -131,7 +137,10 @@ public class RiotService {
 
         // data exists
         if( result.hasBody() ) {
-            List<ChampionMasteryDTO> masteryDTOS = result.getBody().stream().limit(3).collect(Collectors.toList());
+            List<ChampionMasteryDTO> masteryDTOS = result.getBody().stream()
+                    .sorted(Comparator.comparingInt(ChampionMasteryDTO::getChampionLevel).reversed())
+                    .limit(3)
+                    .collect(Collectors.toList());
             return masteryDTOS;
         }
         else {
