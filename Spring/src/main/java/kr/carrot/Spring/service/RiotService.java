@@ -1,9 +1,6 @@
 package kr.carrot.Spring.service;
 
-import kr.carrot.Spring.dto.ChampionMasteryDTO;
-import kr.carrot.Spring.dto.MatchReferenceDTO;
-import kr.carrot.Spring.dto.MatchListDTO;
-import kr.carrot.Spring.dto.SummonerDTO;
+import kr.carrot.Spring.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -192,7 +189,39 @@ public class RiotService {
         else {
             return null;
         }
-
     }
+
+    /**
+     * 한 게임의 상세 정보를 조회
+     * @param matchId
+     * @return
+     */
+    public MatchDTO getDtlMatchInfo(String matchId) {
+
+        // set headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("X-Riot-Token", API_KEY);
+
+        // create Http request entity
+        HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+
+        // set path vars
+        Map<String, String> pathVars = new HashMap<>();
+        pathVars.put("matchId", matchId);
+
+        // create uri
+        URI uri = UriComponentsBuilder.fromUriString(RIOT_BASE_URL)
+                .path("/lol/match/v4/matches/{matchId}")
+                .buildAndExpand(matchId)
+                .encode(StandardCharsets.UTF_8)
+                .toUri();
+
+        // rest call
+        ResponseEntity<MatchDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, MatchDTO.class);
+
+        return result.hasBody() ? result.getBody() : null;
+    }
+
 
 }

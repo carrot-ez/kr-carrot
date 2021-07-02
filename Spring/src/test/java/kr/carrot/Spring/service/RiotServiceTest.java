@@ -1,6 +1,7 @@
 package kr.carrot.Spring.service;
 
 import kr.carrot.Spring.dto.ChampionMasteryDTO;
+import kr.carrot.Spring.dto.MatchDTO;
 import kr.carrot.Spring.dto.MatchReferenceDTO;
 import kr.carrot.Spring.dto.SummonerDTO;
 import org.junit.jupiter.api.Test;
@@ -61,6 +62,22 @@ class RiotServiceTest {
 
         assertThat(matchList).isNotNull();
         matchList.forEach(System.out::println);
+    }
+
+    @Test
+    public void 상세게임정보조회() {
+
+        // 최근 1게임 조회
+        List<MatchReferenceDTO> matchList = riotService.getMatchList(environment.getProperty("riot.summoner-name"), 1);
+
+        // 상세정보 조회
+        MatchDTO matchInfo = riotService.getDtlMatchInfo(matchList.get(0).getGameId());
+
+        // null check
+        assertThat(matchInfo).isNotNull();
+
+        // print game info
+        System.out.println("matchInfo = " + matchInfo);
     }
 
 }
