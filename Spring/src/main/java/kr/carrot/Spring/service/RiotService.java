@@ -1,8 +1,10 @@
 package kr.carrot.Spring.service;
 
+import kr.carrot.Spring.dto.ChampionMasteryDTO;
 import kr.carrot.Spring.dto.SummonerDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -12,7 +14,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -92,6 +96,47 @@ public class RiotService {
         ResponseEntity<SummonerDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, SummonerDTO.class);
 
         return result.hasBody() ? result.getBody() : null;
+    }
+
+    /**
+     * 챔피언 숙련도 정보 조회
+     * @param summonerId
+     * @return
+     */
+    @Nullable
+    public List<ChampionMasteryDTO> getChampionMasteryBySummonerId(String summonerId) {
+
+        // set header
+        HttpHeaders header = new HttpHeaders();
+        header.setContentType(MediaType.APPLICATION_JSON);
+        header.add("X-Riot-Token", API_KEY);
+
+        // create request entity
+        HttpEntity<?> requestEntity = new HttpEntity<>(header);
+
+        // pathVariable
+        Map<String, String> pathVariable = new HashMap<>();
+        pathVariable.put("encryptedSummonerId", summonerId);
+
+        // create uri
+        URI uri = UriComponentsBuilder //
+                .fromUriString(RIOT_BASE_URL)
+                .path("/lol/champion-mastery/v4/champion-masteries/by-summoner/{encryptedSummonerId}")
+                .buildAndExpand(pathVariable)
+                .toUri();
+
+        // get champion mastery (rest call)
+        ResponseEntity<List<ChampionMasteryDTO>> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity,
+                new ParameterizedTypeReference<List<ChampionMasteryDTO>>() { });
+
+        // data exists
+        if( result.hasBody() ) {
+            List<ChampionMasteryDTO> masteryDTOS = result.getBody().stream().limit(3).collect(Collectors.toList());
+            return masteryDTOS;
+        }
+        else {
+            return null;
+        }
     }
 
 }
