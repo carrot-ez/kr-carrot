@@ -1,9 +1,9 @@
 package kr.carrot.Spring.service;
 
-import kr.carrot.Spring.dto.ChampionMasteryDTO;
-import kr.carrot.Spring.dto.MatchDTO;
-import kr.carrot.Spring.dto.MatchReferenceDTO;
-import kr.carrot.Spring.dto.SummonerDTO;
+import kr.carrot.Spring.dto.*;
+import kr.carrot.Spring.dto.res.PlayerInGameInfoDTO;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +22,13 @@ class RiotServiceTest {
 
     @Autowired
     private Environment environment;
+
+    private String summonerName;
+
+    @BeforeEach
+    void setup() {
+        summonerName = environment.getProperty("riot.summoner-name");
+    }
 
 
     @Test
@@ -78,6 +85,20 @@ class RiotServiceTest {
 
         // print game info
         System.out.println("matchInfo = " + matchInfo);
+    }
+
+    @Test
+    public void 게임내플레이어정보조회() {
+
+        // 최근 1게임 조회
+        List<MatchReferenceDTO> matchList = riotService.getMatchList(environment.getProperty("riot.summoner-name"), 1);
+
+        String matchId = matchList.get(0).getGameId();
+
+        //
+        PlayerInGameInfoDTO playerMatchInfo = riotService.getPlayerMatchInfo(matchId, summonerName);
+
+        System.out.println("playerMatchInfo = " + playerMatchInfo);
     }
 
 }

@@ -1,6 +1,7 @@
 package kr.carrot.Spring.service;
 
 import kr.carrot.Spring.dto.*;
+import kr.carrot.Spring.dto.res.PlayerInGameInfoDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -36,6 +37,7 @@ public class RiotService {
 
     /**
      * 소환사 ID로 소환사 정보 조회
+     *
      * @param summonerId
      * @return
      */
@@ -69,6 +71,7 @@ public class RiotService {
 
     /**
      * 소환사 명으로 소환사 정보 조회
+     *
      * @param summonerName
      * @return
      */
@@ -105,6 +108,7 @@ public class RiotService {
 
     /**
      * 챔피언 숙련도 정보 조회
+     *
      * @param summonerId
      * @return
      */
@@ -132,23 +136,24 @@ public class RiotService {
 
         // get champion mastery (rest call)
         ResponseEntity<List<ChampionMasteryDTO>> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity,
-                new ParameterizedTypeReference<List<ChampionMasteryDTO>>() { });
+                new ParameterizedTypeReference<List<ChampionMasteryDTO>>() {
+                });
 
         // data exists
-        if( result.hasBody() ) {
+        if (result.hasBody()) {
             List<ChampionMasteryDTO> masteryDTOS = result.getBody().stream()
                     .sorted(Comparator.comparingInt(ChampionMasteryDTO::getChampionLevel).reversed())
                     .limit(3)
                     .collect(Collectors.toList());
             return masteryDTOS;
-        }
-        else {
+        } else {
             return null;
         }
     }
 
     /**
      * 소환사 이름으로 최근 count개의 기록을 조회
+     *
      * @param summonerName
      * @param count
      * @return
@@ -183,16 +188,16 @@ public class RiotService {
         ResponseEntity<MatchListDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, MatchListDTO.class);
 
         // return match list
-        if(result.hasBody() && result.getBody().getMatches() != null) {
+        if (result.hasBody() && result.getBody().getMatches() != null) {
             return result.getBody().getMatches();
-        }
-        else {
+        } else {
             return null;
         }
     }
 
     /**
      * 한 게임의 상세 정보를 조회
+     *
      * @param matchId
      * @return
      */
@@ -221,6 +226,52 @@ public class RiotService {
         ResponseEntity<MatchDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, MatchDTO.class);
 
         return result.hasBody() ? result.getBody() : null;
+    }
+
+
+    public PlayerInGameInfoDTO getPlayerMatchInfo(String matchId, String summonerName) {
+
+        // get match info
+        MatchDTO dtlMatchInfo = getDtlMatchInfo(matchId);
+
+        ParticipantIdentityDTO participantIdentityDTO = dtlMatchInfo.getParticipantIdentities()
+                .stream()
+                .filter(e -> e.getPlayer().getSummonerName().equals(summonerName))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException(""));
+
+        PlayerInGameInfoDTO player = dtlMatchInfo.getParticipants().stream()
+                .filter(e -> e.getParticipantId() == participantIdentityDTO.getParticipantId())
+                .map(e -> {
+
+                            PlayerInGameInfoDTO playerInGameInfoDTO = PlayerInGameInfoDTO.builder()
+                                    .highestAchievedSeasonTier(e.getHighestAchievedSeasonTier())
+                                    .assists(e.getStats().getAssists())
+                                    .championId(e.getChampionId())
+                                    .deaths(e.getStats().getDeaths())
+                                    .goldEarned(e.getStats().getGoldEarned())
+                                    .item0(e.getStats().getItem0())
+                                    .item1(e.getStats().getItem1())
+                                    .item2(e.getStats().getItem2())
+                                    .item3(e.getStats().getItem3())
+                                    .item4(e.getStats().getItem4())
+                                    .item5(e.getStats().getItem5())
+                                    .item6(e.getStats().getItem6())
+                                    .kills(e.getStats().getKills())
+                                    .profileIcon(participantIdentityDTO.getPlayer().getProfileIcon())
+                                    .spell1Id(e.getSpell1Id())
+                                    .spell2Id(e.getSpell2Id())
+                                    .summonerName(participantIdentityDTO.getPlayer().getSummonerName())
+                                    .win(e.getStats().isWin())
+                                    .build();
+
+                            return playerInGameInfoDTO;
+                        }
+                )
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException(""));
+
+        return player;
     }
 
 
