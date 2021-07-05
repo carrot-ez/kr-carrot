@@ -283,16 +283,14 @@ public class RiotService {
         // get match refeerence
         List<MatchReferenceDTO> matchRefList = getMatchList(summonerName, count);
 
-        AtomicInteger atomicInteger = new AtomicInteger();
-        matchRefList.stream()
-                .map(e -> getInGamePlayerInfo(e.getGameId(), summonerName))
-                .
-                .sorted(Comparator.comparing(e -> e.get))
-
+        int win = 0;
+        int lose = 0;
         List<InGamePlayerInfo> inGamePlayerInfos = new ArrayList<>();
-        for (MatchReferenceDTO e : matchRefList) {
 
+        for (MatchReferenceDTO e : matchRefList) {
+            // add in game info
             InGamePlayerInfo inGamePlayerInfo = getInGamePlayerInfo(e.getGameId(), summonerName);
+            inGamePlayerInfos.add(inGamePlayerInfo);
 
             // count win
             if(inGamePlayerInfo.isWin()) {
@@ -301,11 +299,9 @@ public class RiotService {
             else {
                 lose += 1;
             }
-
-            // add in game info
-            inGamePlayerInfos.add(inGamePlayerInfo);
         }// for
 
+        // set result dto
         SummonerHistory history = SummonerHistory.builder()
                 .win(win)
                 .lose(lose)
