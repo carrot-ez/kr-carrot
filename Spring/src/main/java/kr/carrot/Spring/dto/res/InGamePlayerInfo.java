@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class PlayerInGameInfoDTO {
+public class InGamePlayerInfo {
 
     private String summonerName;
     private int profileIcon;

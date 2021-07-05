@@ -1,7 +1,9 @@
 package kr.carrot.Spring.service;
 
 import kr.carrot.Spring.dto.*;
-import kr.carrot.Spring.dto.res.PlayerInGameInfoDTO;
+import kr.carrot.Spring.dto.res.InGamePlayerInfo;
+import kr.carrot.Spring.dto.res.SummonerHistory;
+import kr.carrot.Spring.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -14,10 +16,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -229,7 +229,13 @@ public class RiotService {
     }
 
 
-    public PlayerInGameInfoDTO getPlayerMatchInfo(String matchId, String summonerName) {
+    /**
+     * 게임 내 플레이어의 상세정보 조회
+     * @param matchId
+     * @param summonerName
+     * @return
+     */
+    public InGamePlayerInfo getInGamePlayerInfo(String matchId, String summonerName) {
 
         // get match info
         MatchDTO dtlMatchInfo = getDtlMatchInfo(matchId);
@@ -238,40 +244,75 @@ public class RiotService {
                 .stream()
                 .filter(e -> e.getPlayer().getSummonerName().equals(summonerName))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new NotFoundException("participant identity not found"));
 
-        PlayerInGameInfoDTO player = dtlMatchInfo.getParticipants().stream()
+        InGamePlayerInfo player = dtlMatchInfo.getParticipants().stream()
                 .filter(e -> e.getParticipantId() == participantIdentityDTO.getParticipantId())
                 .map(e -> {
+                    InGamePlayerInfo inGamePlayerInfo = InGamePlayerInfo.builder()
+                        .highestAchievedSeasonTier(e.getHighestAchievedSeasonTier())
+                        .assists(e.getStats().getAssists())
+                        .championId(e.getChampionId())
+                        .deaths(e.getStats().getDeaths())
+                        .goldEarned(e.getStats().getGoldEarned())
+                        .item0(e.getStats().getItem0())
+                        .item1(e.getStats().getItem1())
+                        .item2(e.getStats().getItem2())
+                        .item3(e.getStats().getItem3())
+                        .item4(e.getStats().getItem4())
+                        .item5(e.getStats().getItem5())
+                        .item6(e.getStats().getItem6())
+                        .kills(e.getStats().getKills())
+                        .profileIcon(participantIdentityDTO.getPlayer().getProfileIcon())
+                        .spell1Id(e.getSpell1Id())
+                        .spell2Id(e.getSpell2Id())
+                        .summonerName(participantIdentityDTO.getPlayer().getSummonerName())
+                        .win(e.getStats().isWin())
+                        .build();
 
-                            PlayerInGameInfoDTO playerInGameInfoDTO = PlayerInGameInfoDTO.builder()
-                                    .highestAchievedSeasonTier(e.getHighestAchievedSeasonTier())
-                                    .assists(e.getStats().getAssists())
-                                    .championId(e.getChampionId())
-                                    .deaths(e.getStats().getDeaths())
-                                    .goldEarned(e.getStats().getGoldEarned())
-                                    .item0(e.getStats().getItem0())
-                                    .item1(e.getStats().getItem1())
-                                    .item2(e.getStats().getItem2())
-                                    .item3(e.getStats().getItem3())
-                                    .item4(e.getStats().getItem4())
-                                    .item5(e.getStats().getItem5())
-                                    .item6(e.getStats().getItem6())
-                                    .kills(e.getStats().getKills())
-                                    .profileIcon(participantIdentityDTO.getPlayer().getProfileIcon())
-                                    .spell1Id(e.getSpell1Id())
-                                    .spell2Id(e.getSpell2Id())
-                                    .summonerName(participantIdentityDTO.getPlayer().getSummonerName())
-                                    .win(e.getStats().isWin())
-                                    .build();
-
-                            return playerInGameInfoDTO;
-                        }
-                )
+                    return inGamePlayerInfo;
+                })
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new NotFoundException("participant not found"));
 
         return player;
+    }
+
+    public SummonerHistory getSummonerHistory(String summonerName, int count) {
+
+        // get match refeerence
+        List<MatchReferenceDTO> matchRefList = getMatchList(summonerName, count);
+
+        AtomicInteger atomicInteger = new AtomicInteger();
+        matchRefList.stream()
+                .map(e -> getInGamePlayerInfo(e.getGameId(), summonerName))
+                .
+                .sorted(Comparator.comparing(e -> e.get))
+
+        List<InGamePlayerInfo> inGamePlayerInfos = new ArrayList<>();
+        for (MatchReferenceDTO e : matchRefList) {
+
+            InGamePlayerInfo inGamePlayerInfo = getInGamePlayerInfo(e.getGameId(), summonerName);
+
+            // count win
+            if(inGamePlayerInfo.isWin()) {
+                win += 1;
+            }
+            else {
+                lose += 1;
+            }
+
+            // add in game info
+            inGamePlayerInfos.add(inGamePlayerInfo);
+        }// for
+
+        SummonerHistory history = SummonerHistory.builder()
+                .win(win)
+                .lose(lose)
+                .inGamePlayerInfos(inGamePlayerInfos)
+                .build();
+
+        return history;
     }
 
 

@@ -1,8 +1,8 @@
 package kr.carrot.Spring.service;
 
 import kr.carrot.Spring.dto.*;
-import kr.carrot.Spring.dto.res.PlayerInGameInfoDTO;
-import org.junit.jupiter.api.BeforeAll;
+import kr.carrot.Spring.dto.res.InGamePlayerInfo;
+import kr.carrot.Spring.dto.res.SummonerHistory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,9 +96,18 @@ class RiotServiceTest {
         String matchId = matchList.get(0).getGameId();
 
         //
-        PlayerInGameInfoDTO playerMatchInfo = riotService.getPlayerMatchInfo(matchId, summonerName);
+        InGamePlayerInfo playerMatchInfo = riotService.getInGamePlayerInfo(matchId, summonerName);
 
         System.out.println("playerMatchInfo = " + playerMatchInfo);
     }
+
+    @Test
+    public void 전적조회() {
+
+        SummonerHistory summonerHistory = riotService.getSummonerHistory(summonerName, 10);
+
+        System.out.println("summonerHistory = " + summonerHistory);
+    }
+
 
 }
