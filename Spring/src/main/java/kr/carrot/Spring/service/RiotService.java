@@ -127,8 +127,6 @@ public class RiotService {
                 .encode(StandardCharsets.UTF_8) // 한글이 그대로 들어가면 에러남
                 .toUri();
 
-        System.out.println(uri.toString());
-
         // get summoner info (rest call)
         ResponseEntity<SummonerDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, SummonerDTO.class);
 
