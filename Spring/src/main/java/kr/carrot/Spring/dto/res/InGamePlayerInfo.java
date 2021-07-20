@@ -8,7 +8,6 @@ import lombok.Data;
 public class InGamePlayerInfo {
 
     private String summonerName;
-    private int profileIcon;
     private int championId;
     private int spell1Id;
     private int spell2Id;

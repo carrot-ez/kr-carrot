@@ -3,7 +3,9 @@ package kr.carrot.Spring.service;
 import kr.carrot.Spring.dto.*;
 import kr.carrot.Spring.dto.res.InGamePlayerInfo;
 import kr.carrot.Spring.dto.res.SummonerHistory;
+import kr.carrot.Spring.entity.KeyEntity;
 import kr.carrot.Spring.exception.NotFoundException;
+import kr.carrot.Spring.repository.KeyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -26,14 +28,35 @@ import java.util.stream.Collectors;
 public class RiotService {
 
     private final RestTemplate restTemplate;
-
-    @Value("${riot.api-key}")
-    private String API_KEY;
+    private final KeyRepository keyRepository;
 
     @Value("${riot.summoner-id}")
     private String SUMMONER_ID_ATRON;
 
     public static final String RIOT_BASE_URL = "https://kr.api.riotgames.com";
+
+    /**
+     * api key 조회
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public String getValidApiKey() {
+        KeyEntity keyEntity = keyRepository.findFirstByOrderByCreatedAtDesc().orElseThrow(() -> new NotFoundException("api-key not found"));
+
+        return keyEntity.getApiKey();
+    }
+
+    /**
+     * api key 등록
+     * @param apiKey
+     * @return
+     */
+    public String registerApiKey(String apiKey) {
+        KeyEntity entity = KeyEntity.builder().apiKey(apiKey).build();
+        keyRepository.save(entity);
+
+        return "success";
+    }
 
     /**
      * 소환사 ID로 소환사 정보 조회
@@ -44,10 +67,13 @@ public class RiotService {
     @Nullable
     public SummonerDTO findSummonerInfoById(String summonerId) {
 
+        // get api-key
+        String apiKey = getValidApiKey();
+
         // set header
         HttpHeaders header = new HttpHeaders();
         header.setContentType(MediaType.APPLICATION_JSON);
-        header.add("X-Riot-Token", API_KEY);
+        header.add("X-Riot-Token", apiKey);
 
         // create request entity
         HttpEntity<?> requestEntity = new HttpEntity<>(header);
@@ -78,10 +104,13 @@ public class RiotService {
     @Nullable
     public SummonerDTO findSummonerInfoByName(String summonerName) {
 
+        // get api-key
+        String apiKey = getValidApiKey();
+
         // set header
         HttpHeaders header = new HttpHeaders();
         header.setContentType(MediaType.APPLICATION_JSON);
-        header.add("X-Riot-Token", API_KEY);
+        header.add("X-Riot-Token", apiKey);
 
         // create request entity
         HttpEntity<?> requestEntity = new HttpEntity<>(header);
@@ -115,10 +144,13 @@ public class RiotService {
     @Nullable
     public List<ChampionMasteryDTO> getChampionMasteryBySummonerId(String summonerId) {
 
+        // get api-key
+        String apiKey = getValidApiKey();
+
         // set header
         HttpHeaders header = new HttpHeaders();
         header.setContentType(MediaType.APPLICATION_JSON);
-        header.add("X-Riot-Token", API_KEY);
+        header.add("X-Riot-Token", apiKey);
 
         // create request entity
         HttpEntity<?> requestEntity = new HttpEntity<>(header);
@@ -160,13 +192,16 @@ public class RiotService {
      */
     public List<MatchReferenceDTO> getMatchList(String summonerName, int count) {
 
+        // get api-key
+        String apiKey = getValidApiKey();
+
         // get account id
         SummonerDTO summonerInfo = findSummonerInfoByName(summonerName);
 
         // set header
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("X-Riot-Token", API_KEY);
+        headers.add("X-Riot-Token", apiKey);
 
         // create http request entity
         HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -203,10 +238,13 @@ public class RiotService {
      */
     public MatchDTO getDtlMatchInfo(String matchId) {
 
+        // get api-key
+        String apiKey = getValidApiKey();
+
         // set headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("X-Riot-Token", API_KEY);
+        headers.add("X-Riot-Token", apiKey);
 
         // create Http request entity
         HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -231,6 +269,7 @@ public class RiotService {
 
     /**
      * 게임 내 플레이어의 상세정보 조회
+     *
      * @param matchId
      * @param summonerName
      * @return
@@ -250,25 +289,24 @@ public class RiotService {
                 .filter(e -> e.getParticipantId() == participantIdentityDTO.getParticipantId())
                 .map(e -> {
                     InGamePlayerInfo inGamePlayerInfo = InGamePlayerInfo.builder()
-                        .highestAchievedSeasonTier(e.getHighestAchievedSeasonTier())
-                        .assists(e.getStats().getAssists())
-                        .championId(e.getChampionId())
-                        .deaths(e.getStats().getDeaths())
-                        .goldEarned(e.getStats().getGoldEarned())
-                        .item0(e.getStats().getItem0())
-                        .item1(e.getStats().getItem1())
-                        .item2(e.getStats().getItem2())
-                        .item3(e.getStats().getItem3())
-                        .item4(e.getStats().getItem4())
-                        .item5(e.getStats().getItem5())
-                        .item6(e.getStats().getItem6())
-                        .kills(e.getStats().getKills())
-                        .profileIcon(participantIdentityDTO.getPlayer().getProfileIcon())
-                        .spell1Id(e.getSpell1Id())
-                        .spell2Id(e.getSpell2Id())
-                        .summonerName(participantIdentityDTO.getPlayer().getSummonerName())
-                        .win(e.getStats().isWin())
-                        .build();
+                            .summonerName(summonerName)
+                            .highestAchievedSeasonTier(e.getHighestAchievedSeasonTier())
+                            .assists(e.getStats().getAssists())
+                            .championId(e.getChampionId())
+                            .deaths(e.getStats().getDeaths())
+                            .goldEarned(e.getStats().getGoldEarned())
+                            .item0(e.getStats().getItem0())
+                            .item1(e.getStats().getItem1())
+                            .item2(e.getStats().getItem2())
+                            .item3(e.getStats().getItem3())
+                            .item4(e.getStats().getItem4())
+                            .item5(e.getStats().getItem5())
+                            .item6(e.getStats().getItem6())
+                            .kills(e.getStats().getKills())
+                            .spell1Id(e.getSpell1Id())
+                            .spell2Id(e.getSpell2Id())
+                            .win(e.getStats().isWin())
+                            .build();
 
                     return inGamePlayerInfo;
                 })
@@ -278,7 +316,19 @@ public class RiotService {
         return player;
     }
 
+    /**
+     * count 게임간의 게임 이력 조회
+     * @param summonerName
+     * @param count
+     * @return
+     */
     public SummonerHistory getSummonerHistory(String summonerName, int count) {
+
+        // get summoner info
+        SummonerDTO summonerDTO = findSummonerInfoByName(summonerName);
+        if (summonerDTO == null) {
+            throw new NotFoundException("summoner info not found");
+        }
 
         // get match refeerence
         List<MatchReferenceDTO> matchRefList = getMatchList(summonerName, count);
@@ -293,16 +343,18 @@ public class RiotService {
             inGamePlayerInfos.add(inGamePlayerInfo);
 
             // count win
-            if(inGamePlayerInfo.isWin()) {
+            if (inGamePlayerInfo.isWin()) {
                 win += 1;
-            }
-            else {
+            } else {
                 lose += 1;
             }
         }// for
 
         // set result dto
         SummonerHistory history = SummonerHistory.builder()
+                .summonerName(summonerName)
+                .summonerLevel(summonerDTO.getSummonerLevel())
+                .profileIcon(summonerDTO.getProfileIconId())
                 .win(win)
                 .lose(lose)
                 .inGamePlayerInfos(inGamePlayerInfos)
@@ -310,6 +362,4 @@ public class RiotService {
 
         return history;
     }
-
-
 }

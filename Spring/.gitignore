@@ -38,3 +38,4 @@ out/
 
 ### key file ###
 src/main/resources/config/key.yml
+src/main/resources/application.yml
