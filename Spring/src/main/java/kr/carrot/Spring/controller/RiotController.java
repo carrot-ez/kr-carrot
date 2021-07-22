@@ -1,6 +1,7 @@
 package kr.carrot.Spring.controller;
 
 import kr.carrot.Spring.dto.com.ComResponseDto;
+import kr.carrot.Spring.dto.req.ApiKeyReq;
 import kr.carrot.Spring.dto.res.SummonerHistory;
 import kr.carrot.Spring.service.RiotService;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +19,15 @@ public class RiotController {
     private final RiotService riotService;
 
     @PostMapping("/api-key")
-    public HttpEntity<?> registerApiKey(String apiKey) {
+    public HttpEntity<?> registerApiKey(@RequestBody ApiKeyReq apiKeyReq) {
+
+        System.out.println(apiKeyReq);
 
         ComResponseDto<?> body = null;
         HttpStatus status = null;
 
         try {
-            String result = riotService.registerApiKey(apiKey);
+            String result = riotService.registerApiKey(apiKeyReq.getApiKey());
             body = ComResponseDto.success(result);
             status = HttpStatus.OK;
         }
