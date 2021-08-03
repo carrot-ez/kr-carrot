@@ -8,9 +8,9 @@ import lombok.Data;
 public class InGamePlayerInfo {
 
     private String summonerName;
-    private int championId;
-    private int spell1Id;
-    private int spell2Id;
+    private String champion;
+    private String spell1;
+    private String spell2;
     private String highestAchievedSeasonTier;
     private int item0;
     private int item1;

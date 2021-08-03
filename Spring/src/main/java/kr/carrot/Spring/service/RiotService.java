@@ -3,9 +3,14 @@ package kr.carrot.Spring.service;
 import kr.carrot.Spring.dto.*;
 import kr.carrot.Spring.dto.res.InGamePlayerInfo;
 import kr.carrot.Spring.dto.res.SummonerHistory;
+import kr.carrot.Spring.entity.ChampionEntity;
 import kr.carrot.Spring.entity.KeyEntity;
+import kr.carrot.Spring.entity.SummonerSpellEntity;
+import kr.carrot.Spring.exception.InvalidDataException;
 import kr.carrot.Spring.exception.NotFoundException;
+import kr.carrot.Spring.repository.ChampionRepository;
 import kr.carrot.Spring.repository.KeyRepository;
+import kr.carrot.Spring.repository.SummonerSpellRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -29,9 +34,8 @@ public class RiotService {
 
     private final RestTemplate restTemplate;
     private final KeyRepository keyRepository;
-
-    @Value("${riot.summoner-id}")
-    private String SUMMONER_ID_ATRON;
+    private final ChampionRepository championRepository;
+    private final SummonerSpellRepository summonerSpellRepository;
 
     public static final String RIOT_BASE_URL = "https://kr.api.riotgames.com";
 
@@ -286,11 +290,21 @@ public class RiotService {
         InGamePlayerInfo player = dtlMatchInfo.getParticipants().stream()
                 .filter(e -> e.getParticipantId() == participantIdentityDTO.getParticipantId())
                 .map(e -> {
+
+                    ChampionEntity championEntity = championRepository.findById(e.getChampionId())
+                            .orElseThrow(() -> new InvalidDataException("invalid champion id"));
+
+                    SummonerSpellEntity spell1Entity = summonerSpellRepository.findById(e.getSpell1Id())
+                            .orElseThrow(() -> new InvalidDataException("invalid spell 1 id"));
+
+                    SummonerSpellEntity spell2Entity = summonerSpellRepository.findById(e.getSpell2Id())
+                            .orElseThrow(() -> new InvalidDataException("invalid spell 2 id"));
+
                     InGamePlayerInfo inGamePlayerInfo = InGamePlayerInfo.builder()
                             .summonerName(summonerName)
                             .highestAchievedSeasonTier(e.getHighestAchievedSeasonTier())
                             .assists(e.getStats().getAssists())
-                            .championId(e.getChampionId())
+                            .champion(championEntity.getName())
                             .deaths(e.getStats().getDeaths())
                             .goldEarned(e.getStats().getGoldEarned())
                             .item0(e.getStats().getItem0())
@@ -301,8 +315,8 @@ public class RiotService {
                             .item5(e.getStats().getItem5())
                             .item6(e.getStats().getItem6())
                             .kills(e.getStats().getKills())
-                            .spell1Id(e.getSpell1Id())
-                            .spell2Id(e.getSpell2Id())
+                            .spell1(spell1Entity.getSpellName())
+                            .spell2(spell2Entity.getSpellName())
                             .win(e.getStats().isWin())
                             .build();
 
