@@ -3,11 +3,15 @@ package kr.carrot.Spring.service;
 import kr.carrot.Spring.dto.*;
 import kr.carrot.Spring.dto.res.InGamePlayerInfo;
 import kr.carrot.Spring.dto.res.SummonerHistory;
+import kr.carrot.Spring.entity.KeyEntity;
+import kr.carrot.Spring.repository.KeyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +23,8 @@ class RiotServiceTest {
 
     @Autowired
     private RiotService riotService;
+    @Autowired
+    private KeyRepository keyRepository;
 
     @Autowired
     private Environment environment;
@@ -107,6 +113,24 @@ class RiotServiceTest {
         SummonerHistory summonerHistory = riotService.getSummonerHistory(summonerName, 10);
 
         System.out.println("summonerHistory = " + summonerHistory);
+    }
+
+    @Test
+    @Transactional
+    public void apiKey등록() {
+
+        String validApiKey = riotService.getValidApiKey();
+        System.out.println("validApiKey = " + validApiKey);
+
+        // given
+        riotService.registerApiKey("1234");
+        riotService.registerApiKey("9999");
+
+        // when
+        int size = keyRepository.findAll().size();
+
+        // then
+        assertThat(size).isEqualTo(1);
     }
 
 

@@ -56,6 +56,7 @@ public class RiotService {
      * @return
      */
     public String registerApiKey(String apiKey) {
+        keyRepository.deleteAll();
         KeyEntity entity = KeyEntity.builder().apiKey(apiKey).build();
         keyRepository.save(entity);
 
@@ -110,6 +111,7 @@ public class RiotService {
 
         // get api-key
         String apiKey = getValidApiKey();
+        System.out.println("apiKey = " + apiKey);
 
         // set header
         HttpHeaders header = new HttpHeaders();
