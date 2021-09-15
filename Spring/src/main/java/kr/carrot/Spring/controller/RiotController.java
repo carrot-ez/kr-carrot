@@ -18,44 +18,18 @@ public class RiotController {
 
     private final RiotService riotService;
 
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/api-key")
-    public HttpEntity<?> registerApiKey(@RequestBody ApiKeyReq apiKeyReq) {
+    public ComResponseDto<?> registerApiKey(@RequestBody ApiKeyReq apiKeyReq) {
 
-        System.out.println(apiKeyReq);
-
-        ComResponseDto<?> body = null;
-        HttpStatus status = null;
-
-        try {
-            String result = riotService.registerApiKey(apiKeyReq.getApiKey());
-            body = ComResponseDto.success(result);
-            status = HttpStatus.OK;
-        }
-        // TODO CHANGE CATCH BLOCK
-        catch (Exception e) {
-            body = ComResponseDto.fail(e.getMessage());
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-
-        return new ResponseEntity<>(body, status);
+        String result = riotService.registerApiKey(apiKeyReq.getApiKey());
+        return ComResponseDto.success(result);
     }
 
     @GetMapping("/summoner/{summonerName}/{count}")
-    public HttpEntity<?> retrieveSummonerInfo(@PathVariable String summonerName, @PathVariable int count) {
+    public ComResponseDto<?> retrieveSummonerInfo(@PathVariable String summonerName, @PathVariable int count) {
 
-        ComResponseDto<?> body = null;
-        HttpStatus status = null;
-
-        try {
-            SummonerHistory summonerHistory = riotService.getSummonerHistory(summonerName, count);
-            body = ComResponseDto.success(summonerHistory);
-            status = HttpStatus.OK;
-        }
-        catch (Exception e) {
-            body = ComResponseDto.fail(e.getMessage());
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-
-        return new ResponseEntity<>(body, status);
+        SummonerHistory summonerHistory = riotService.getSummonerHistory(summonerName, count);
+        return ComResponseDto.success(summonerHistory);
     }
 }
