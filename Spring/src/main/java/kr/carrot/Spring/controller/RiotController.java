@@ -8,6 +8,7 @@ import kr.carrot.Spring.repository.KeyRepository;
 import kr.carrot.Spring.service.RiotService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ public class RiotController {
         return ComResponseDto.success(result);
     }
 
+    @Cacheable
     @GetMapping("/summoner/{summonerName}/{count}")
     public ComResponseDto<?> retrieveSummonerInfo(@PathVariable String summonerName, @PathVariable int count) {
 
