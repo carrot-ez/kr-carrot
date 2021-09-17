@@ -31,9 +31,9 @@ public class RiotController {
         return ComResponseDto.success(result);
     }
 
-    @Cacheable
+    @Cacheable("history")
     @GetMapping("/summoner/{summonerName}/{count}")
-    public ComResponseDto<?> retrieveSummonerInfo(@PathVariable String summonerName, @PathVariable int count) {
+    public ComResponseDto<SummonerHistory> retrieveSummonerInfo(@PathVariable String summonerName, @PathVariable int count) {
 
         SummonerHistory summonerHistory = riotService.getSummonerHistory(summonerName, count);
         return ComResponseDto.success(summonerHistory);

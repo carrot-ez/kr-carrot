@@ -1,10 +1,9 @@
 package kr.carrot.Spring.dto.res;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 @Data
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class InGamePlayerInfo {
 
     private String summonerName;
@@ -24,4 +23,25 @@ public class InGamePlayerInfo {
     private int kills;
     private int assists;
     private boolean win;
+
+    @Builder
+    public InGamePlayerInfo(String summonerName, String champion, String spell1, String spell2, String highestAchievedSeasonTier, int item0, int item1, int item2, int item3, int item4, int item5, int item6, int goldEarned, int deaths, int kills, int assists, boolean win) {
+        this.summonerName = summonerName;
+        this.champion = champion;
+        this.spell1 = spell1;
+        this.spell2 = spell2;
+        this.highestAchievedSeasonTier = highestAchievedSeasonTier;
+        this.item0 = item0;
+        this.item1 = item1;
+        this.item2 = item2;
+        this.item3 = item3;
+        this.item4 = item4;
+        this.item5 = item5;
+        this.item6 = item6;
+        this.goldEarned = goldEarned;
+        this.deaths = deaths;
+        this.kills = kills;
+        this.assists = assists;
+        this.win = win;
+    }
 }

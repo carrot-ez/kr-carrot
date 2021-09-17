@@ -30,6 +30,9 @@ dependencies {
 	// redis cache
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis' // redis
 	implementation 'org.springframework.boot:spring-boot-starter-cache' // cache
+
+	// embedded redis
+	implementation 'it.ozimov:embedded-redis:0.7.2'
 }
 
 test {
