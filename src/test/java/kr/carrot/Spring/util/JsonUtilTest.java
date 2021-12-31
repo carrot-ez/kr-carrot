@@ -28,63 +28,63 @@ class JsonUtilTest {
     @Autowired
     SummonerSpellRepository summonerSpellRepository;
 
-    @Test
-    @Transactional
-    @Rollback(value = false)
-    public void 챔피언데이터입력() {
-        try {
-            HashMap<?, ?> json = JsonUtil.readJson(HashMap.class, "champion.json");
-
-            LinkedHashMap<?, ?> data = (LinkedHashMap<?, ?>) json.get("data");
-
-            for (Map.Entry<?, ?> entry : data.entrySet()) {
-
-                String championName = (String) entry.getKey();
-
-                LinkedHashMap<?, ?> value = (LinkedHashMap<?, ?>) entry.getValue();
-                int key = Integer.parseInt( (String) value.get("key"));
-
-                ChampionEntity entity = ChampionEntity.builder()
-                        .key(key)
-                        .name(championName)
-                        .build();
-
-                championRepository.save(entity);
-            }
-        }
-        catch(IOException ie) {
-            System.out.println(ie.getMessage());
-        }
-
-    }
-
-    @Test
-    @Transactional
-    @Rollback(value = false)
-    public void 서머너스펠_디비_입력() {
-        try {
-            HashMap<?, ?> json = JsonUtil.readJson(HashMap.class, "summoner.json");
-
-            LinkedHashMap<?, ?> data = (LinkedHashMap<?, ?>) json.get("data");
-
-            for (Map.Entry<?, ?> entry : data.entrySet()) {
-                String spellName = (String) entry.getKey();
-                HashMap<?, ?> value = (HashMap<?, ?>) entry.getValue();
-
-                int key = Integer.parseInt((String) value.get("key"));
-
-                SummonerSpellEntity entity = SummonerSpellEntity.builder()
-                        .spellKey(key)
-                        .spellName(spellName)
-                        .build();
-
-                summonerSpellRepository.save(entity);
-
-                System.out.println("complete: " + spellName);
-            }
-        }
-        catch(IOException ie) {
-            System.out.println(ie.getMessage());
-        }
-    }
+//    @Test
+//    @Transactional
+//    @Rollback(value = false)
+//    public void 챔피언데이터입력() {
+//        try {
+//            HashMap<?, ?> json = JsonUtil.readJson(HashMap.class, "champion.json");
+//
+//            LinkedHashMap<?, ?> data = (LinkedHashMap<?, ?>) json.get("data");
+//
+//            for (Map.Entry<?, ?> entry : data.entrySet()) {
+//
+//                String championName = (String) entry.getKey();
+//
+//                LinkedHashMap<?, ?> value = (LinkedHashMap<?, ?>) entry.getValue();
+//                int key = Integer.parseInt( (String) value.get("key"));
+//
+//                ChampionEntity entity = ChampionEntity.builder()
+//                        .key(key)
+//                        .name(championName)
+//                        .build();
+//
+//                championRepository.save(entity);
+//            }
+//        }
+//        catch(IOException ie) {
+//            System.out.println(ie.getMessage());
+//        }
+//
+//    }
+//
+//    @Test
+//    @Transactional
+//    @Rollback(value = false)
+//    public void 서머너스펠_디비_입력() {
+//        try {
+//            HashMap<?, ?> json = JsonUtil.readJson(HashMap.class, "summoner.json");
+//
+//            LinkedHashMap<?, ?> data = (LinkedHashMap<?, ?>) json.get("data");
+//
+//            for (Map.Entry<?, ?> entry : data.entrySet()) {
+//                String spellName = (String) entry.getKey();
+//                HashMap<?, ?> value = (HashMap<?, ?>) entry.getValue();
+//
+//                int key = Integer.parseInt((String) value.get("key"));
+//
+//                SummonerSpellEntity entity = SummonerSpellEntity.builder()
+//                        .spellKey(key)
+//                        .spellName(spellName)
+//                        .build();
+//
+//                summonerSpellRepository.save(entity);
+//
+//                System.out.println("complete: " + spellName);
+//            }
+//        }
+//        catch(IOException ie) {
+//            System.out.println(ie.getMessage());
+//        }
+//    }
 }
