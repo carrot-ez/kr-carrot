@@ -2,8 +2,10 @@ package kr.carrot.Spring.dto.res;
 
 import kr.carrot.Spring.dto.ParticipantDto;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class GameInfo {
     private long gameDuration;
     private long gameEndTimestamp;
