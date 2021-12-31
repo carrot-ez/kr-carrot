@@ -3,7 +3,7 @@ package kr.carrot.Spring.dto;
 import lombok.Data;
 
 @Data
-public class SummonerDTO {
+public class SummonerDto {
     private String accountId;
     private int profileIconId;
     private long revisionDate;

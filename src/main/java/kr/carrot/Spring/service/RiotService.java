@@ -1,6 +1,8 @@
 package kr.carrot.Spring.service;
 
 import kr.carrot.Spring.dto.*;
+import kr.carrot.Spring.dto.res.GameInfo;
+import kr.carrot.Spring.dto.res.SummonerHistory;
 import kr.carrot.Spring.entity.KeyEntity;
 import kr.carrot.Spring.exception.NotFoundException;
 import kr.carrot.Spring.repository.ChampionRepository;
@@ -17,13 +19,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +39,7 @@ public class RiotService {
 
     /**
      * api key 조회
+     *
      * @return
      */
     @Transactional(readOnly = true)
@@ -52,6 +51,7 @@ public class RiotService {
 
     /**
      * api key 등록
+     *
      * @param apiKey
      * @return
      */
@@ -70,7 +70,7 @@ public class RiotService {
      * @return
      */
     @Nullable
-    public SummonerDTO findSummonerInfoById(String summonerId) {
+    public SummonerDto findSummonerInfoById(String summonerId) {
 
         // get api-key
         String apiKey = getValidApiKey();
@@ -95,7 +95,7 @@ public class RiotService {
                 .toUri();
 
         // get summoner info (rest call)
-        ResponseEntity<SummonerDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, SummonerDTO.class);
+        ResponseEntity<SummonerDto> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, SummonerDto.class);
 
         return result.hasBody() ? result.getBody() : null;
     }
@@ -106,8 +106,7 @@ public class RiotService {
      * @param summonerName
      * @return
      */
-    @Nullable
-    public SummonerDTO findSummonerInfoByName(String summonerName) {
+    public Optional<SummonerDto> findSummonerInfoByName(String summonerName) {
 
         // get api-key
         String apiKey = getValidApiKey();
@@ -133,9 +132,9 @@ public class RiotService {
                 .toUri();
 
         // get summoner info (rest call)
-        ResponseEntity<SummonerDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, SummonerDTO.class);
+        ResponseEntity<SummonerDto> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, SummonerDto.class);
 
-        return result.hasBody() ? result.getBody() : null;
+        return Optional.ofNullable(result.getBody());
     }
 
     /**
@@ -186,100 +185,38 @@ public class RiotService {
         }
     }
 
-    /**
-     * 소환사 이름으로 최근 count개의 기록을 조회
-     *
-     * @param summonerName
-     * @param count
-     * @return
-     */
-    public List<MatchReferenceDTO> getMatchList(String summonerName, int count) {
+    public List<String> getMatchIdList(String summonerName) {
+        SummonerDto summonerDto = findSummonerInfoByName(summonerName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 소환사명"));
 
-        // get api-key
-        String apiKey = getValidApiKey();
-
-        // get account id
-        SummonerDTO summonerInfo = findSummonerInfoByName(summonerName);
-
-        // set header
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("X-Riot-Token", apiKey);
-
-        // create http request entity
-        HttpEntity<?> requestEntity = new HttpEntity<>(headers);
-
-        // set pathVariables
-        Map<String, String> pathVars = new HashMap<>();
-        pathVars.put("encryptedAccountId", summonerInfo.getAccountId());
-
-        // build uri
-        URI uri = UriComponentsBuilder.fromUriString(RIOT_BASE_URL)
-                .path("/lol/match/v4/matchlists/by-account/{encryptedAccountId}")
-                .queryParam("beginIndex", 0)
-                .queryParam("endIndex", count)
-                .buildAndExpand(pathVars)
-                .encode(StandardCharsets.UTF_8)
-                .toUri();
-
-        // get math list
-        ResponseEntity<MatchListDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, MatchListDTO.class);
-
-        // return match list
-        if (result.hasBody() && result.getBody().getMatches() != null) {
-            return result.getBody().getMatches();
-        } else {
-            return null;
-        }
+        return getMatchIdListByPuuid(summonerDto.getPuuid());
     }
 
-    /**
-     * 한 게임의 상세 정보를 조회
-     *
-     * @param matchId
-     * @return
-     */
-    public MatchDto getDtlMatchInfo(String matchId) {
-
-        // get api-key
-        String apiKey = getValidApiKey();
-
-        // set headers
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("X-Riot-Token", apiKey);
-
-        // create Http request entity
-        HttpEntity<?> requestEntity = new HttpEntity<>(headers);
-
-        // set path vars
-        Map<String, String> pathVars = new HashMap<>();
-        pathVars.put("matchId", matchId);
-
-        // create uri
-        URI uri = UriComponentsBuilder.fromUriString(RIOT_BASE_URL)
-                .path("/lol/match/v4/matches/{matchId}")
-                .buildAndExpand(matchId)
-                .encode(StandardCharsets.UTF_8)
-                .toUri();
-
-        // rest call
-        ResponseEntity<MatchDto> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, MatchDto.class);
-
-        return result.hasBody() ? result.getBody() : null;
-    }
-
-    public List<String> getListOfMatchIds(String puuid) {
+    public List<String> getMatchIdListByPuuid(String puuid) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("count", "10");
-        return get("/lol/match/v5/matches/by-puuid/{puuid}/ids", new ParameterizedTypeReference<List<String>>(){ }, params, puuid);
+        return get("/lol/match/v5/matches/by-puuid/{puuid}/ids", new ParameterizedTypeReference<List<String>>() {
+        }, params, puuid);
     }
 
     public MatchDto getMatch(String matchId) {
         return get("/lol/match/v5/matches/{matchId}", MatchDto.class, matchId);
     }
 
-    private <T> T get(String path, Class<T> responseType, Object ...vars) {
+    public SummonerHistory getHistory(String summonerName) {
+        List<String> matchIdList = getMatchIdList(summonerName);
+        List<GameInfo> gameInfos = matchIdList.stream()
+                .map(matchId -> {
+                    MatchDto matchDto = getMatch(matchId);
+                    ParticipantDto paricipant = matchDto.getParicipant(summonerName);
+                    return new GameInfo(matchDto.getInfo().getGameDuration(), matchDto.getInfo().getGameEndTimestamp(), matchDto.getInfo().getGameStartTimestamp(), paricipant);
+                })
+                .collect(Collectors.toList());
+
+        return new SummonerHistory(gameInfos);
+    }
+
+    private <T> T get(String path, Class<T> responseType, Object... vars) {
         HttpHeaders header = getAuthorizedHeader();
 
         URI uri = UriComponentsBuilder.fromUriString(RIOT_BASE_ASIA)

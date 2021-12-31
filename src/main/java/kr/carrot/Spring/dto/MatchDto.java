@@ -1,5 +1,6 @@
 package kr.carrot.Spring.dto;
 
+import kr.carrot.Spring.exception.NotFoundException;
 import lombok.Data;
 
 import java.util.List;
@@ -8,4 +9,17 @@ import java.util.List;
 public class MatchDto {
     private MetadataDto metadata;
     private InfoDto info;
+
+    public ParticipantDto getParicipant(String summonerName) {
+        if (info == null) {
+            return null;
+        }
+
+        return info.getParticipants().stream()
+                .filter(participant -> {
+                    return summonerName.equals(participant.getSummonerName());
+                })
+                .findFirst()
+                .orElse(null);
+    }
 }

@@ -6,12 +6,12 @@ import java.util.List;
 
 @Data
 public class InfoDto {
-    long gameCreation;
-    long gameDuration;
-    long gameEndTimestamp;
-    long gameStartTimestamp;
-    long gameId;
-    int mapId;
-    List<ParticipantDto> participants;
+    private long gameCreation;
+    private long gameDuration;
+    private long gameEndTimestamp;
+    private long gameStartTimestamp;
+    private long gameId;
+    private int mapId;
+    private List<ParticipantDto> participants;
 
 }
