@@ -1,6 +1,0 @@
-<resources>
-    <string name="app_name">GiftSignal</string>
-    <string name="title_list_view">ListView</string>
-    <string name="title_dir_view">DirectoryView</string>
-    <string name="title_setting">Setting</string>
-</resources>
