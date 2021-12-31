@@ -1,12 +1,7 @@
 package kr.carrot.Spring.service;
 
 import kr.carrot.Spring.dto.*;
-import kr.carrot.Spring.dto.res.InGamePlayerInfo;
-import kr.carrot.Spring.dto.res.SummonerHistory;
-import kr.carrot.Spring.entity.ChampionEntity;
 import kr.carrot.Spring.entity.KeyEntity;
-import kr.carrot.Spring.entity.SummonerSpellEntity;
-import kr.carrot.Spring.exception.InvalidDataException;
 import kr.carrot.Spring.exception.NotFoundException;
 import kr.carrot.Spring.repository.ChampionRepository;
 import kr.carrot.Spring.repository.KeyRepository;
@@ -17,13 +12,18 @@ import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,12 +31,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RiotService {
 
+    public static final String RIOT_BASE_URL = "https://kr.api.riotgames.com";
+    public static final String RIOT_BASE_ASIA = "https://asia.api.riotgames.com";
+
     private final RestTemplate restTemplate;
     private final KeyRepository keyRepository;
     private final ChampionRepository championRepository;
     private final SummonerSpellRepository summonerSpellRepository;
-
-    public static final String RIOT_BASE_URL = "https://kr.api.riotgames.com";
 
     /**
      * api key 조회
@@ -238,7 +239,7 @@ public class RiotService {
      * @param matchId
      * @return
      */
-    public MatchDTO getDtlMatchInfo(String matchId) {
+    public MatchDto getDtlMatchInfo(String matchId) {
 
         // get api-key
         String apiKey = getValidApiKey();
@@ -263,149 +264,52 @@ public class RiotService {
                 .toUri();
 
         // rest call
-        ResponseEntity<MatchDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, MatchDTO.class);
+        ResponseEntity<MatchDto> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, MatchDto.class);
 
         return result.hasBody() ? result.getBody() : null;
     }
 
-
-    /**
-     * 게임 내 플레이어의 상세정보 조회
-     *
-     * @param matchId
-     * @param summonerName
-     * @return
-     */
-    public InGamePlayerInfo getInGamePlayerInfo(String matchId, String summonerName) {
-
-        // get match info
-        MatchDTO dtlMatchInfo = getDtlMatchInfo(matchId);
-
-        ParticipantIdentityDTO participantIdentityDTO = dtlMatchInfo.getParticipantIdentities()
-                .stream()
-                .filter(e -> e.getPlayer().getSummonerName().equals(summonerName))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("participant identity not found"));
-
-        InGamePlayerInfo player = dtlMatchInfo.getParticipants().stream()
-                .filter(e -> e.getParticipantId() == participantIdentityDTO.getParticipantId())
-                .map(e -> {
-
-                    ChampionEntity championEntity = championRepository.findById(e.getChampionId())
-                            .orElseThrow(() -> new InvalidDataException("invalid champion id"));
-
-                    SummonerSpellEntity spell1Entity = summonerSpellRepository.findById(e.getSpell1Id())
-                            .orElseThrow(() -> new InvalidDataException("invalid spell 1 id"));
-
-                    SummonerSpellEntity spell2Entity = summonerSpellRepository.findById(e.getSpell2Id())
-                            .orElseThrow(() -> new InvalidDataException("invalid spell 2 id"));
-
-                    InGamePlayerInfo inGamePlayerInfo = InGamePlayerInfo.builder()
-                            .summonerName(summonerName)
-                            .highestAchievedSeasonTier(e.getHighestAchievedSeasonTier())
-                            .assists(e.getStats().getAssists())
-                            .champion(championEntity.getName())
-                            .deaths(e.getStats().getDeaths())
-                            .goldEarned(e.getStats().getGoldEarned())
-                            .item0(e.getStats().getItem0())
-                            .item1(e.getStats().getItem1())
-                            .item2(e.getStats().getItem2())
-                            .item3(e.getStats().getItem3())
-                            .item4(e.getStats().getItem4())
-                            .item5(e.getStats().getItem5())
-                            .item6(e.getStats().getItem6())
-                            .kills(e.getStats().getKills())
-                            .spell1(spell1Entity.getSpellName())
-                            .spell2(spell2Entity.getSpellName())
-                            .win(e.getStats().isWin())
-                            .build();
-
-                    return inGamePlayerInfo;
-                })
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("participant not found"));
-
-        return player;
-    }
-
-    /**
-     * count 게임간의 게임 이력 조회
-     * @param summonerName
-     * @param count
-     * @return
-     */
-    public SummonerHistory getSummonerHistory(String summonerName, int count) {
-
-        // get summoner info
-        SummonerDTO summonerDTO = findSummonerInfoByName(summonerName);
-        if (summonerDTO == null) {
-            throw new NotFoundException("summoner info not found");
-        }
-
-        // get match refeerence
-        List<MatchReferenceDTO> matchRefList = getMatchList(summonerName, count);
-
-        int win = 0;
-        int lose = 0;
-        List<InGamePlayerInfo> inGamePlayerInfos = new ArrayList<>();
-
-        for (MatchReferenceDTO e : matchRefList) {
-            // add in game info
-            InGamePlayerInfo inGamePlayerInfo = getInGamePlayerInfo(e.getGameId(), summonerName);
-            inGamePlayerInfos.add(inGamePlayerInfo);
-
-            // count win
-            if (inGamePlayerInfo.isWin()) {
-                win += 1;
-            } else {
-                lose += 1;
-            }
-        }// for
-
-        // set result dto
-        SummonerHistory history = SummonerHistory.builder()
-                .summonerName(summonerName)
-                .summonerLevel(summonerDTO.getSummonerLevel())
-                .profileIcon(summonerDTO.getProfileIconId())
-                .win(win)
-                .lose(lose)
-                .inGamePlayerInfos(inGamePlayerInfos)
-                .build();
-
-        return history;
-    }
-
     public List<String> getListOfMatchIds(String puuid) {
-        return get("/lol/match/v5/matches/by-puuid/{puuid}/ids", new ParameterizedTypeReference<List<String>>(){ }, puuid);
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("count", "10");
+        return get("/lol/match/v5/matches/by-puuid/{puuid}/ids", new ParameterizedTypeReference<List<String>>(){ }, params, puuid);
     }
 
+    public MatchDto getMatch(String matchId) {
+        return get("/lol/match/v5/matches/{matchId}", MatchDto.class, matchId);
+    }
 
-
-    private <T> T get(String path, Type type, Object... vars) {
-        if (!(type instanceof Class)) {
-            throw new IllegalArgumentException("잘못된 타입 지정");
-        }
-        Class<T> responseType = (Class<T>) type;
+    private <T> T get(String path, Class<T> responseType, Object ...vars) {
         HttpHeaders header = getAuthorizedHeader();
 
-        URI uri = UriComponentsBuilder.fromUriString(RIOT_BASE_URL)
+        URI uri = UriComponentsBuilder.fromUriString(RIOT_BASE_ASIA)
                 .path(path)
                 .buildAndExpand(vars)
+                .encode(StandardCharsets.UTF_8)
                 .toUri();
 
         RequestEntity<Object> requestEntity = new RequestEntity<>(header, HttpMethod.GET, uri);
 
-        ResponseEntity<List<String>> exchange = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<List<String>>() { }); //
+        ResponseEntity<T> exchange = restTemplate.exchange(requestEntity, responseType); //
 
-        return responseType.cast(exchange.getBody());
+        return exchange.getBody();
     }
 
-    private <T> T get(String path, Class<T> responseType, Object ...vars) {
-        return get(path, responseType, vars);
-    }
+    private <T> T get(String path, ParameterizedTypeReference<T> responseType, MultiValueMap<String, String> params, Object... vars) {
+        HttpHeaders header = getAuthorizedHeader();
 
-    private <T> T get(String path, ParameterizedTypeReference<T> responseType, Object... vars) {
-        return get(path, responseType.getType(), vars);
+        URI uri = UriComponentsBuilder.fromUriString(RIOT_BASE_ASIA)
+                .path(path)
+                .queryParams(params)
+                .buildAndExpand(vars)
+                .encode(StandardCharsets.UTF_8)
+                .toUri();
+
+        RequestEntity<Object> requestEntity = new RequestEntity<>(header, HttpMethod.GET, uri);
+
+        ResponseEntity<T> exchange = restTemplate.exchange(requestEntity, responseType); //
+
+        return exchange.getBody();
     }
 
     private HttpHeaders getAuthorizedHeader() {

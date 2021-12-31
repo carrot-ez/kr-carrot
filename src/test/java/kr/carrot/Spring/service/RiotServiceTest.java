@@ -3,14 +3,10 @@ package kr.carrot.Spring.service;
 import kr.carrot.Spring.dto.*;
 import kr.carrot.Spring.dto.res.InGamePlayerInfo;
 import kr.carrot.Spring.dto.res.SummonerHistory;
-import kr.carrot.Spring.entity.KeyEntity;
 import kr.carrot.Spring.repository.KeyRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -66,35 +62,13 @@ class RiotServiceTest {
         List<MatchReferenceDTO> matchList = riotService.getMatchList(summonerName, 1);
 
         // 상세정보 조회
-        MatchDTO matchInfo = riotService.getDtlMatchInfo(matchList.get(0).getGameId());
+        MatchDto matchInfo = riotService.getDtlMatchInfo(matchList.get(0).getGameId());
 
         // null check
         assertThat(matchInfo).isNotNull();
 
         // print game info
         System.out.println("matchInfo = " + matchInfo);
-    }
-
-    @Test
-    public void 게임내플레이어정보조회() {
-
-        // 최근 1게임 조회
-        List<MatchReferenceDTO> matchList = riotService.getMatchList(summonerName, 1);
-
-        String matchId = matchList.get(0).getGameId();
-
-        //
-        InGamePlayerInfo playerMatchInfo = riotService.getInGamePlayerInfo(matchId, summonerName);
-
-        System.out.println("playerMatchInfo = " + playerMatchInfo);
-    }
-
-    @Test
-    public void 전적조회() {
-
-        SummonerHistory summonerHistory = riotService.getSummonerHistory(summonerName, 10);
-
-        System.out.println("summonerHistory = " + summonerHistory);
     }
 
     @Test
@@ -113,5 +87,31 @@ class RiotServiceTest {
 
         // then
         assertThat(size).isEqualTo(1);
+    }
+
+    @Test
+    public void getMatchIdList() {
+        // given
+        SummonerDTO summonerDTO = riotService.findSummonerInfoByName("Sheria");
+
+        // when
+        List<String> listOfMatchIds = riotService.getListOfMatchIds(summonerDTO.getPuuid());
+
+        // then
+        assertThat(listOfMatchIds.size()).isEqualTo(10);
+    }
+
+    @Test
+    public void getMatchData() {
+        // given
+        SummonerDTO summonerDTO = riotService.findSummonerInfoByName("Sheria");
+        String matchId = riotService.getListOfMatchIds(summonerDTO.getPuuid()).get(0);
+
+        // when
+        MatchDto match = riotService.getMatch(matchId);
+
+        // then
+        assertThat(match).isNotNull();
+        match.getInfo().getParticipants().forEach(System.out::println);
     }
 }
