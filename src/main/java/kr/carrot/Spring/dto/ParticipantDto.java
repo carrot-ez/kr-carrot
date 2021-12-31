@@ -20,9 +20,16 @@ public class ParticipantDto {
     private int item5;
     private int item6;
     private int summoner1Id;
+    private String summonerSpell1;
     private int summoner2Id;
+    private String summonerSpell2;
     private int summonerLevel;
     private String summonerName;
     private int timePlayed;
     private boolean win;
+
+    public void setSummonerSpell(String spell1, String spell2) {
+        this.summonerSpell1 = spell1;
+        this.summonerSpell2 = spell2;
+    }
 }

@@ -1,5 +1,6 @@
 package kr.carrot.Spring.controller;
 
+import kr.carrot.Spring.dto.SummonerDto;
 import kr.carrot.Spring.dto.com.ComResponseDto;
 import kr.carrot.Spring.dto.req.ApiKeyReq;
 import kr.carrot.Spring.dto.res.SummonerHistory;
@@ -32,9 +33,17 @@ public class RiotController {
     }
 
     @Cacheable("history")
-    @GetMapping("/summoner/{summonerName}")
-    public ComResponseDto<SummonerHistory> retrieveSummonerInfo(@PathVariable String summonerName) {
+    @GetMapping("/summoners/histories/{summonerName}")
+    public ComResponseDto<SummonerHistory> retrieveSummonerHistories(@PathVariable String summonerName) {
         SummonerHistory history = riotService.getHistory(summonerName);
         return ComResponseDto.success(history);
+    }
+
+    @GetMapping("/summoners/{summonerName}")
+    public ComResponseDto<SummonerDto> retrieveSummonerInfo(@PathVariable String summonerName) {
+        SummonerDto summoner = riotService.findSummonerInfoByName(summonerName)
+                .orElseThrow(() -> new IllegalArgumentException("summoner not found"));
+
+        return ComResponseDto.success(summoner);
     }
 }

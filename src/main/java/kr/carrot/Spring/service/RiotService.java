@@ -4,6 +4,7 @@ import kr.carrot.Spring.dto.*;
 import kr.carrot.Spring.dto.res.GameInfo;
 import kr.carrot.Spring.dto.res.SummonerHistory;
 import kr.carrot.Spring.entity.KeyEntity;
+import kr.carrot.Spring.entity.SummonerSpellEntity;
 import kr.carrot.Spring.exception.NotFoundException;
 import kr.carrot.Spring.repository.ChampionRepository;
 import kr.carrot.Spring.repository.KeyRepository;
@@ -209,6 +210,9 @@ public class RiotService {
                 .map(matchId -> {
                     MatchDto matchDto = getMatch(matchId);
                     ParticipantDto paricipant = matchDto.getParicipant(summonerName);
+                    SummonerSpellEntity spell1 = summonerSpellRepository.findById(paricipant.getSummoner1Id()).orElseThrow(() -> new RuntimeException("summoner spell not found"));
+                    SummonerSpellEntity spell2 = summonerSpellRepository.findById(paricipant.getSummoner2Id()).orElseThrow(() -> new RuntimeException("summoner spell not found"));
+                    paricipant.setSummonerSpell(spell1.getSpellName(), spell2.getSpellName());
                     return new GameInfo(matchDto.getInfo().getGameDuration(), matchDto.getInfo().getGameEndTimestamp(), matchDto.getInfo().getGameStartTimestamp(), paricipant);
                 })
                 .collect(Collectors.toList());
