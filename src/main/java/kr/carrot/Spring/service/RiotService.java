@@ -12,7 +12,6 @@ import kr.carrot.Spring.repository.ChampionRepository;
 import kr.carrot.Spring.repository.KeyRepository;
 import kr.carrot.Spring.repository.SummonerSpellRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
@@ -21,10 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -111,7 +110,6 @@ public class RiotService {
 
         // get api-key
         String apiKey = getValidApiKey();
-        System.out.println("apiKey = " + apiKey);
 
         // set header
         HttpHeaders header = new HttpHeaders();
@@ -375,5 +373,46 @@ public class RiotService {
                 .build();
 
         return history;
+    }
+
+    public List<String> getListOfMatchIds(String puuid) {
+        return get("/lol/match/v5/matches/by-puuid/{puuid}/ids", new ParameterizedTypeReference<List<String>>(){ }, puuid);
+    }
+
+
+
+    private <T> T get(String path, Type type, Object... vars) {
+        if (!(type instanceof Class)) {
+            throw new IllegalArgumentException("잘못된 타입 지정");
+        }
+        Class<T> responseType = (Class<T>) type;
+        HttpHeaders header = getAuthorizedHeader();
+
+        URI uri = UriComponentsBuilder.fromUriString(RIOT_BASE_URL)
+                .path(path)
+                .buildAndExpand(vars)
+                .toUri();
+
+        RequestEntity<Object> requestEntity = new RequestEntity<>(header, HttpMethod.GET, uri);
+
+        ResponseEntity<List<String>> exchange = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<List<String>>() { }); //
+
+        return responseType.cast(exchange.getBody());
+    }
+
+    private <T> T get(String path, Class<T> responseType, Object ...vars) {
+        return get(path, responseType, vars);
+    }
+
+    private <T> T get(String path, ParameterizedTypeReference<T> responseType, Object... vars) {
+        return get(path, responseType.getType(), vars);
+    }
+
+    private HttpHeaders getAuthorizedHeader() {
+        String apiKey = getValidApiKey();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("X-Riot-Token", apiKey);
+        return headers;
     }
 }

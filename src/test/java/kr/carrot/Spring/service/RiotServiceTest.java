@@ -26,22 +26,14 @@ class RiotServiceTest {
     @Autowired
     private KeyRepository keyRepository;
 
-    @Autowired
-    private Environment environment;
-
-    private String summonerName;
-
-    @BeforeEach
-    void setup() {
-        summonerName = environment.getProperty("riot.summoner-name");
-    }
-
+    private final String summonerName = "아트런";
+    private final String summonerId = "RdusDM7DKdcLYvb7HxrUyA6qm6xHWV29psxHjcfki3uFpzI";
 
     @Test
     public void 소환사이름으로조회() {
 
         // find by name
-        SummonerDTO summonerInfoByName = riotService.findSummonerInfoByName(environment.getProperty("riot.summoner-name"));
+        SummonerDTO summonerInfoByName = riotService.findSummonerInfoByName(summonerName);
 //        SummonerDTO summonerInfoByName = riotService.findSummonerInfoByName("sheria");
 
         System.out.println("summonerInfoByName = " + summonerInfoByName);
@@ -49,19 +41,9 @@ class RiotServiceTest {
     }
 
     @Test
-    public void 소환사아이디로조회() {
-
-        // find by id
-        SummonerDTO summonerInfoById = riotService.findSummonerInfoById(environment.getProperty("riot.summoner-id"));
-
-        System.out.println("summonerInfoById = " + summonerInfoById);
-        assertThat(summonerInfoById).isNotNull();
-    }
-
-    @Test
     public void 챔피언숙련도조회() {
 
-        List<ChampionMasteryDTO> masteryList = riotService.getChampionMasteryBySummonerId(environment.getProperty("riot.summoner-id"));
+        List<ChampionMasteryDTO> masteryList = riotService.getChampionMasteryBySummonerId(summonerId);
 
         assertThat(masteryList).isNotNull();
         masteryList.forEach(System.out::println);
@@ -71,7 +53,7 @@ class RiotServiceTest {
     public void 최근게임이력조회() {
 
         // 최근 5건의 경기 조회
-        List<MatchReferenceDTO> matchList = riotService.getMatchList(environment.getProperty("riot.summoner-name"), 5);
+        List<MatchReferenceDTO> matchList = riotService.getMatchList(summonerName, 5);
 
         assertThat(matchList).isNotNull();
         matchList.forEach(System.out::println);
@@ -81,7 +63,7 @@ class RiotServiceTest {
     public void 상세게임정보조회() {
 
         // 최근 1게임 조회
-        List<MatchReferenceDTO> matchList = riotService.getMatchList(environment.getProperty("riot.summoner-name"), 1);
+        List<MatchReferenceDTO> matchList = riotService.getMatchList(summonerName, 1);
 
         // 상세정보 조회
         MatchDTO matchInfo = riotService.getDtlMatchInfo(matchList.get(0).getGameId());
@@ -97,7 +79,7 @@ class RiotServiceTest {
     public void 게임내플레이어정보조회() {
 
         // 최근 1게임 조회
-        List<MatchReferenceDTO> matchList = riotService.getMatchList(environment.getProperty("riot.summoner-name"), 1);
+        List<MatchReferenceDTO> matchList = riotService.getMatchList(summonerName, 1);
 
         String matchId = matchList.get(0).getGameId();
 
@@ -132,6 +114,4 @@ class RiotServiceTest {
         // then
         assertThat(size).isEqualTo(1);
     }
-
-
 }
