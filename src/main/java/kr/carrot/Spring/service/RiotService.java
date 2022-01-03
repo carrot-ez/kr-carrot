@@ -10,6 +10,7 @@ import kr.carrot.Spring.repository.ChampionRepository;
 import kr.carrot.Spring.repository.KeyRepository;
 import kr.carrot.Spring.repository.SummonerSpellRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;

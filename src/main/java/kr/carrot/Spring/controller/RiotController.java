@@ -9,6 +9,8 @@ import kr.carrot.Spring.repository.KeyRepository;
 import kr.carrot.Spring.service.RiotService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -32,9 +34,16 @@ public class RiotController {
         return ComResponseDto.success(result);
     }
 
-    @Cacheable("history")
+    @Cacheable(value = "history", key = "#summonerName")
     @GetMapping("/summoners/histories/{summonerName}")
     public ComResponseDto<SummonerHistory> retrieveSummonerHistories(@PathVariable String summonerName) {
+        SummonerHistory history = riotService.getHistory(summonerName);
+        return ComResponseDto.success(history);
+    }
+
+    @CachePut(value = "history", key = "#summonerName")
+    @GetMapping("/summoners/histories/re/{summonerName}")
+    public ComResponseDto<SummonerHistory> retrieveSummonerHistoriesRefresh(@PathVariable String summonerName) {
         SummonerHistory history = riotService.getHistory(summonerName);
         return ComResponseDto.success(history);
     }
