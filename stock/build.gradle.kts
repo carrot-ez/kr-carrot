@@ -1,5 +1,6 @@
 plugins {
     id("core-conventions")
+    id("swagger-conventions")
 }
 
 dependencies {
