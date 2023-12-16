@@ -1,6 +1,6 @@
 package kr.carrot.stock.controller;
 
-import kr.carrot.core.infra.http.client.datagov.StockClient;
+import kr.carrot.stock.infrastructure.http.client.StockClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

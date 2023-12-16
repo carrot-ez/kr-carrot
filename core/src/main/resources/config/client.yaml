@@ -1,4 +1,6 @@
 client:
   data-gov:
-    baseUrl: https://apis.data.go.kr
-    authKey: # decoding key
+    base-url: https://apis.data.go.kr
+    auth-key: # decoding key
+    path:
+      stock: /1160100/service/GetStockSecuritiesInfoService
