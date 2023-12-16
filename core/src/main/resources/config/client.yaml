@@ -1,0 +1,4 @@
+client:
+  data-gov:
+    baseUrl: https://apis.data.go.kr
+    authKey: # decoding key

@@ -1,3 +1,6 @@
 spring:
   profiles:
     default: local
+  config:
+    import:
+      - classpath:config/client.yaml
