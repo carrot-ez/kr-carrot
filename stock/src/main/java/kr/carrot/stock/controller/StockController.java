@@ -1,5 +1,6 @@
 package kr.carrot.stock.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import kr.carrot.stock.infrastructure.http.client.StockClient;
 import kr.carrot.stock.infrastructure.http.request.StockPriceInfoRequest;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,7 @@ public class StockController {
     private final StockClient stockClient;
 
     @GetMapping
-    public Object getAllStocks() {
+    public Object getAllStocks() throws JsonProcessingException {
         return stockClient.getStockPriceInfo(new StockPriceInfoRequest(1, 2));
     }
 
