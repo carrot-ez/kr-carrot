@@ -1,6 +1,6 @@
 client:
   data-gov:
     base-url: https://apis.data.go.kr
-    auth-key: # decoding key
+    auth-key: # encoding key - 내부적으로 encoding 안하는 형태로 관리
     path:
       stock: /1160100/service/GetStockSecuritiesInfoService

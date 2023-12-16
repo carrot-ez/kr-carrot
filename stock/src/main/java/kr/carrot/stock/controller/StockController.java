@@ -1,6 +1,7 @@
 package kr.carrot.stock.controller;
 
 import kr.carrot.stock.infrastructure.http.client.StockClient;
+import kr.carrot.stock.infrastructure.http.request.StockPriceInfoRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,7 +13,7 @@ public class StockController {
 
     @GetMapping
     public Object getAllStocks() {
-        return stockClient.getStock();
+        return stockClient.getStockPriceInfo(new StockPriceInfoRequest(1, 2));
     }
 
     public StockController(StockClient stockClient) {

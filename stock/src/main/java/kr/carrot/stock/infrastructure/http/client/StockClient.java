@@ -1,7 +1,11 @@
 package kr.carrot.stock.infrastructure.http.client;
 
 import kr.carrot.core.configuration.DataGovProperties;
+import kr.carrot.stock.infrastructure.http.request.StockPriceInfoRequest;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 public class StockClient {
     private final String baseUrl;
@@ -14,10 +18,14 @@ public class StockClient {
         this.restTemplate = restTemplate;
     }
 
-    public String getStock() {
-        return restTemplate.getForObject(
-                baseUrl + "/getStockPriceInfo?serviceKey="+authKey,
-                String.class
-        );
+    public String getStockPriceInfo(StockPriceInfoRequest request) {
+        URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl + "/getStockPriceInfo")
+                .queryParam("serviceKey", authKey)
+                .queryParam("resultType", request.resultType)
+                .queryParam("pageNo", request.pageNo)
+                .queryParam("numOfRows", request.numOfRows)
+                .build().toUri();
+
+        return restTemplate.getForObject(uri, String.class);
     }
 }
