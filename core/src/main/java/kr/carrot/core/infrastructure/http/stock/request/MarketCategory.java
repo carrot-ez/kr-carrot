@@ -1,4 +1,4 @@
-package kr.carrot.stock.infrastructure.http.request;
+package kr.carrot.core.infrastructure.http.stock.request;
 
 public enum MarketCategory {
     KOSPI,

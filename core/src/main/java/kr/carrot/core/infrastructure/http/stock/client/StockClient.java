@@ -1,4 +1,4 @@
-package kr.carrot.stock.infrastructure.http.client;
+package kr.carrot.core.infrastructure.http.stock.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.carrot.core.configuration.DataGovProperties;
 import kr.carrot.core.domain.common.PageContent;
 import kr.carrot.core.infrastructure.http.client.HttpClient;
-import kr.carrot.stock.infrastructure.http.request.ResultType;
-import kr.carrot.stock.infrastructure.http.request.StockPriceInfoRequest;
-import kr.carrot.stock.infrastructure.http.response.StockApiResponse;
-import kr.carrot.stock.infrastructure.http.response.StockPriceInfoItemResponse;
+import kr.carrot.core.infrastructure.http.stock.request.StockPriceInfoRequest;
+import kr.carrot.core.infrastructure.http.stock.request.ResultType;
+import kr.carrot.core.infrastructure.http.stock.response.StockApiResponse;
+import kr.carrot.core.infrastructure.http.stock.response.StockPriceInfoItemResponse;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;

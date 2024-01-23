@@ -1,10 +1,8 @@
-package kr.carrot.stock.infrastructure.http.request;
-
-import jakarta.validation.constraints.NotNull;
+package kr.carrot.core.infrastructure.http.stock.request;
 
 public final class StockPriceInfoRequestBuilder {
-    private @NotNull int pageNo;
-    private @NotNull int numOfRows;
+    private int pageNo;
+    private int numOfRows;
     private String basDt;
     private String beginBasDt;
     private String endBasDt;

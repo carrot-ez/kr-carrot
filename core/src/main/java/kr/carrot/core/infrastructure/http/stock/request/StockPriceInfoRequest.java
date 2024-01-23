@@ -1,10 +1,8 @@
-package kr.carrot.stock.infrastructure.http.request;
-
-import jakarta.validation.constraints.NotNull;
+package kr.carrot.core.infrastructure.http.stock.request;
 
 public record StockPriceInfoRequest(
-        @NotNull int pageNo, // 1부터 시작
-        @NotNull int numOfRows,
+        int pageNo, // 1부터 시작
+        int numOfRows,
         String basDt, // == 기간
         String beginBasDt, // >= 기간
         String endBasDt, // < 기간

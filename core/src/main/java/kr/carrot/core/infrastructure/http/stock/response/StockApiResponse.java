@@ -1,4 +1,4 @@
-package kr.carrot.stock.infrastructure.http.response;
+package kr.carrot.core.infrastructure.http.stock.response;
 
 import java.util.List;
 

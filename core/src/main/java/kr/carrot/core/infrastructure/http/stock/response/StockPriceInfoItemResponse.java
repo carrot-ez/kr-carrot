@@ -1,6 +1,6 @@
-package kr.carrot.stock.infrastructure.http.response;
+package kr.carrot.core.infrastructure.http.stock.response;
 
-import kr.carrot.stock.infrastructure.http.request.MarketCategory;
+import kr.carrot.core.infrastructure.http.stock.request.MarketCategory;
 
 public record StockPriceInfoItemResponse(
         String basDt, // 기준일자
